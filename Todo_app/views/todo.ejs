@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Todo</title>
+  <link href="/stylesheets/style.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+  <div role="navigation" class="navbar navbar-default">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" data-toggle="collapse" data-target=".navbar-collapse" class="navbar-toggle"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a href="/" class="navbar-brand">Todo</a>
+      </div>
+      <div class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="/users/logout">Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <h1>Todo list</h1>
+    <hr>
+    <div class="input-group">
+      <input type="text" class="form-control" placeholder="Enter task.." id="task">
+      <div class="input-group-btn">
+        <button type="button" class="btn btn-info btn-rounded btn-flat" onclick="addTask()">Add</button>
+      </div>
+    </div>
+    <ol class="list-group " id="task-list">
+    <% if(usr.todo.length !== 0) { %>
+      <% for(task of usr.todo){ %>
+      <li class="list-group-item list-group-item-info" id="task-items"><%=task%></li>
+      <% } %>
+     <% } %>
+    </ol>
+  </div>
+  <script type="text/javascript">
+  function addTask() {
+    let val = $("#task").val();
+    $.ajax({
+      method: 'POST',
+      url: '/todo/create/task',
+      data: { task: val },
+      success: function(response) {
+        console.log(response);
+        $('ol#task-list').append(`<li class="list-group-item list-group-item-info" id="task-items">${response.task}</li>`);
+      }
+
+    });
+  }
+  </script>
+</body>
+
+</html>
