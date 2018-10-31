@@ -6,19 +6,24 @@ const express = require('express'),
  bodyParser = require('body-parser'),
  session = require('express-session'),
  expressValidator = require('express-validator'),
- auth = require('./util/auth');
-console.log(typeof(auth));
-const routes = require('./routes/index');
-const users = require('./routes/users');
-const todo = require('./routes/todo');
-const app = express();
+ auth = require('./util/auth'),
+ passport = require('passport'),
+ routes = require('./routes/index'),
+ users = require('./routes/users'),
+ todo = require('./routes/todo'),
+ cors = require('cors'),
+ app = express();
+
+//used to load passport config module with jwt strategy
 
 // view engine setup
+
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+app.use(cors());
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -44,12 +49,19 @@ app.use(expressValidator({
     };
   }
 }));
-app.use(cookieParser());
+app.use(cookieParser({
+  secure: true,
+  //dummy project no need to put in seperate folder this
+  secret: 'neka%pravo$opasna_tajna',
+  httpOnly: true
+}));
 app.use(express.static(path.join(__dirname, 'public')));
+require('./config/passport')(passport);
+app.use(passport.initialize());
 app.use(auth());
 app.use('/', routes);
 app.use('/users', users);
-app.use('/todo',todo);
+app.use('/todo', todo);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

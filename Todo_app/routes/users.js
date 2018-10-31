@@ -1,92 +1,66 @@
-const express = require('express');
-const router = express.Router();
-const users = require('../util/user');
-const uuid = require('uuid');
+const express = require('express'),
+ router = express.Router(),
+ users = require('../util/user'),
+ uuid = require('uuid/v1'),
+ cryptPassword = require('../util/cryptPassword'),
+ passport = require('passport'),
+ config = require('../config/passport.cred'),
+ sanitizeUser = require('../util/sanitizeUser'),
+ jwt = require('jsonwebtoken');
 
 router.get('/register', function(req, res, next) {
-  res.render('register',{title:'Register', errors: null});
+  res.render('register', { title: 'Register', errors: null });
 });
 
 router.get('/login', function(req, res, next) {
-  res.render('login', {title:'Login', errors: null});
+  res.render('login', { title: 'Login', errors: null });
+});
+router.post('/login',passport.authenticate('login', { session: false }), function(req, res, next){
+  const usr = sanitizeUser(req.user);
+  const token = jwt.sign(usr,config.secret, { expiresIn: '24h'});
+  res.cookie('Bearer',token);
+  res.json({token: `${token}`, succes: true});
 });
 
-router.post('/login', function(req, res, next) {
-  let email = req.body.email;
-  let password = req.body.password;
-  req.checkBody('email','Email field is required').notEmpty();
-  req.checkBody('email','Email is not valid').isEmail();
-  req.checkBody('password','Password field is required').notEmpty();
-
-  const errors = req.validationErrors();
-  let logovan = false;
-  if(errors){
-    res.render('login', {
-      errors: errors
-    });
-  } else{
-      if(req.cookies !== null)
-        res.clearCookie('_id');
-      let logovan = false;
-      users.forEach(user => {
-        if(user.email === email && user.password === password){
-          user.cookieID = uuid();
-          logovan = true;
-          res.cookie('_id',user.cookieID)
-             .location('/todo')
-             .redirect('/todo');
-        }
-      });
-      console.log(logovan);
-      if(!logovan)
-        res.render('login',{ errors:[{msg: 'Invalid email/password'}] });
-  }
-});
-
-router.post('/register',function(req, res, next) {
+router.post('/register',async function(req, res, next) {
   let email = req.body.email;
   let username = req.body.username;
   let password = req.body.password;
   let password2 = req.body.password2;
   // Form Validator
-  req.checkBody('email','Email field is required').notEmpty();
-  req.checkBody('email','Email is not valid').isEmail();
-  req.checkBody('username','Username field is required').notEmpty();
-  req.checkBody('password','Password field is required').notEmpty();
-  req.checkBody('password2','Passwords do not match').equals(req.body.password);
+  req.checkBody('email', 'Email field is required').notEmpty();
+  req.checkBody('email', 'Email is not valid').isEmail();
+  req.checkBody('username', 'Username field is required').notEmpty();
+  req.checkBody('password', 'Password field is required').notEmpty();
+  req.checkBody('password2', 'Passwords do not match').equals(req.body.password);
 
   // Check Errors
   const errors = req.validationErrors();
 
-  if(errors){
-  	res.render('register', {
-  		errors: errors
-  	});
-  } else{
-    if(users.filter(user => user.email === email).length == 0){
+  if (errors) {
+    res.render('register', {
+      errors: errors
+    });
+  } else {
+    if (users.filter(user => user.email === email).length == 0) {
+      password = await cryptPassword(password);
       users.push({
-        username:username,
-        email:email,
-        password:password,
-        cookieID: null,
-        todo:[]
+        _id: uuid(),
+        username: username,
+        email: email,
+        password: password,
+        todo: []
       });
-      console.log(users);
-      res.location('/users/login');
       res.redirect('/users/login');
-    }else{
-      res.render('register',{ errors:[{msg: 'User already exists'}] });
+    } else {
+      res.render('register', { errors: [{ msg: 'User already exists' }] });
     }
   };
 });
 
-router.get('/logout', function(req, res){
-  users.forEach(user => {
-    if(user.cookieID === req.cookies._id)
-      user.cookieID === null;
-  });
-  res.clearCookie('_id').location('/users/login').redirect('/users/login');
-
+router.get('/logout', function(req, res) {
+  res.clearCookie('Bearer');
+  res.redirect('/users/login');
 });
 
 module.exports = router;

@@ -31,29 +31,39 @@
         <button type="button" class="btn btn-info btn-rounded btn-flat" onclick="addTask()">Add</button>
       </div>
     </div>
+    <div class="alert alert-danger" role="alert" id="empty-task-msg">Unable to add empty task!</div>
     <ol class="list-group " id="task-list">
-    <% if(usr.todo.length !== 0) { %>
+      <% if(usr.todo.length !== 0) { %>
       <% for(task of usr.todo){ %>
-      <li class="list-group-item list-group-item-info" id="task-items"><%=task%></li>
+      <li class="list-group-item list-group-item-info" id="task-items">
+        <%=task%>
+      </li>
       <% } %>
-     <% } %>
+      <% } %>
     </ol>
   </div>
   <script type="text/javascript">
   function addTask() {
-    let val = $("#task").val();
-    $.ajax({
-      method: 'POST',
-      url: '/todo/create/task',
-      data: { task: val },
-      success: function(response) {
-        console.log(response);
-        $('ol#task-list').append(`<li class="list-group-item list-group-item-info" id="task-items">${response.task}</li>`);
-      }
-
-    });
-  }
-  </script>
+    let val = $("#task").val().trim();
+    if (!val) {
+      $("#empty-task-msg").fadeIn("slow");
+      setTimeout(function() {
+        $("#empty-task-msg").slideUp("slow");
+      },3000);
+    } else {
+      $("#task").val('');
+      $.ajax({
+        method: 'POST',
+        url: '/todo/create/task',
+        data: { task: val },
+        success: function(response) {
+          $('ol#task-list').append(`<li class="list-group-item list-group-item-info" id="task-items">${response.task}</li>`);
+        }
+      });
+    }
+    $("#task").val('');
+  };
+</script>
 </body>
 
 </html>
