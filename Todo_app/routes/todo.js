@@ -5,6 +5,7 @@ const users = require('../util/user');
 router.get('/', (req, res, next) => {
   console.log("INSIDE TODO");
   let usr = users.filter(user => user._id === req.user._id);
+  //res.json(req.user);
   res.render('todo', { usr: usr[0] });
 });
 router.post('/create/task',(req, res, next) => {

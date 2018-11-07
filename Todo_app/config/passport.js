@@ -7,6 +7,8 @@ const JwtStrategy = require('passport-jwt').Strategy,
 
 const cookieExtractor = function(req) {
   let token = null;
+  console.log(req.cookies);
+  console.log(req.signedCookie)
   if (req && req.cookies) token = req.cookies['Bearer'];
   return token;
 };
@@ -17,6 +19,9 @@ module.exports = (passport) => {
   opts.secretOrKey = config.secret;
   passport.use(new JwtStrategy(opts, async (payload, done) => {
     let logovan = undefined;
+    console.log(payload);
+    console.log(new Date(payload.iat));
+    console.log(new Date(payload.exp));
     await users.forEach( user => {
       if (user._id === payload.id) {
         logovan = true;
@@ -30,12 +35,12 @@ module.exports = (passport) => {
   const localOpts = {
     usernameField: 'email'
   };
-  passport.use('login', new LocalStrategy(localOpts, async (email, password, done) => {
-    console.log(email, password);
+  passport.use('login', new LocalStrategy(localOpts,async (email, password, done) => {
     let logovan = undefined;
-    await users.forEach(async user => {
+
+    await users.forEach( user => {
       if (user.email === email)
-        await bcrypt.compare(password, user.password, (err, isMatch) => {
+         bcrypt.compare(password, user.password, (err, isMatch) => {
           if (err) {
             logovan = false;
             return done(err, false);

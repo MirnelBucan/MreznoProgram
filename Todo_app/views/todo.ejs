@@ -58,6 +58,15 @@
         data: { task: val },
         success: function(response) {
           $('ol#task-list').append(`<li class="list-group-item list-group-item-info" id="task-items">${response.task}</li>`);
+        },
+        error:function(res, status, error){
+          if(status === 400){
+            alert(res.responseJSON.msg);
+            location.assign(res.responseJSON.redirect);
+          }else{
+            alert('Unauthorized access!');
+            location.assign(res.responseJSON.redirect)
+          }
         }
       });
     }

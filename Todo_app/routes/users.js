@@ -17,12 +17,13 @@ router.get('/login', function(req, res, next) {
 });
 router.post('/login',passport.authenticate('login', { session: false }), function(req, res, next){
   const usr = sanitizeUser(req.user);
-  const token = jwt.sign(usr,config.secret, { expiresIn: '24h'});
-  res.cookie('Bearer',token);
-  res.json({token: `${token}`, succes: true});
+  const token = jwt.sign(usr,config.secret, { expiresIn: '5m'});
+  const expires= new Date(Date.now()+(1000*60*5));
+  console.log(expires);
+  res.cookie('Bearer',token,{httpOnly:true,expires:expires}).json({token: `${token}`, succes: true});
 });
 
-router.post('/register',async function(req, res, next) {
+router.post('/register',async function(req, res, next){
   let email = req.body.email;
   let username = req.body.username;
   let password = req.body.password;

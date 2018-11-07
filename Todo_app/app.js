@@ -50,10 +50,10 @@ app.use(expressValidator({
   }
 }));
 app.use(cookieParser({
-  secure: true,
   //dummy project no need to put in seperate folder this
   secret: 'neka%pravo$opasna_tajna',
-  httpOnly: true
+  httpOnly: true,
+  signed: true
 }));
 app.use(express.static(path.join(__dirname, 'public')));
 require('./config/passport')(passport);
