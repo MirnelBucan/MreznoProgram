@@ -1,12 +1,12 @@
 const express = require('express'),
- router = express.Router(),
- users = require('../util/user'),
- uuid = require('uuid/v1'),
- cryptPassword = require('../util/cryptPassword'),
- passport = require('passport'),
- config = require('../config/passport.cred'),
- sanitizeUser = require('../util/sanitizeUser'),
- jwt = require('jsonwebtoken');
+  router = express.Router(),
+  uuid = require('uuid/v1'),
+  cryptPassword = require('../util/cryptPassword'),
+  passport = require('passport'),
+  config = require('../config/passport.cred'),
+  sanitizeUser = require('../util/sanitizeUser'),
+  jwt = require('jsonwebtoken'),
+  { users } = require('../models');
 
 router.get('/register', function(req, res, next) {
   res.render('register', { title: 'Register', errors: null });
@@ -43,20 +43,19 @@ router.post('/register',async function(req, res, next){
       errors: errors
     });
   } else {
-    if (users.filter(user => user.email === email).length == 0) {
+    try {
       password = await cryptPassword(password);
-      users.push({
-        _id: uuid(),
+      let user = await users.create({
         username: username,
-        email: email,
         password: password,
-        todo: []
+        email: email
       });
       res.redirect('/users/login');
-    } else {
-      res.render('register', { errors: [{ msg: 'User already exists' }] });
+    } catch (err) {
+      console.log(err);
+      res.render('register', {errors: [{msg: 'User already exists'}]});
     }
-  };
+  }
 });
 
 router.get('/logout', function(req, res) {

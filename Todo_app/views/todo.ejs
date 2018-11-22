@@ -33,12 +33,12 @@
     </div>
     <div class="alert alert-danger" role="alert" id="empty-task-msg">Unable to add empty task!</div>
     <ol class="list-group " id="task-list">
-      <% if(usr.todo.length !== 0) { %>
-      <% for(task of usr.todo){ %>
+      <% if(taskList.length !== 0) { %>
+      <% for(task of taskList){ %>
       <li class="list-group-item list-group-item-info" id="task-items">
-        <%=task%>
+        <%=task.name%>
       </li>
-      <% } %>
+       <% } %>
       <% } %>
     </ol>
   </div>

@@ -27,12 +27,6 @@ app.use(cors());
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-// Handle Sessions
-app.use(session({
-  secret: 'Pravo?opasna#tajna', //use .env to store or in onther module
-  saveUninitialized: false,
-  resave: false
-}));
 // Validator
 app.use(expressValidator({
   errorFormatter: function(param, msg, value) {
@@ -50,7 +44,7 @@ app.use(expressValidator({
   }
 }));
 app.use(cookieParser({
-  //dummy project no need to put in seperate folder this
+  //TODO: export const from file
   secret: 'neka%pravo$opasna_tajna',
   httpOnly: true,
   signed: true
@@ -58,10 +52,10 @@ app.use(cookieParser({
 app.use(express.static(path.join(__dirname, 'public')));
 require('./config/passport')(passport);
 app.use(passport.initialize());
-app.use(auth());
+//app.use(auth());
 app.use('/', routes);
 app.use('/users', users);
-app.use('/todo', todo);
+app.use('/todo',passport.authenticate('jwt', { session: false }), todo);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

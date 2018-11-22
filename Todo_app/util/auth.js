@@ -1,4 +1,4 @@
-const users = require('./user'),
+const { users } = require('../models'),
   passport = require('passport');
 
 module.exports = () => {

@@ -1,19 +1,30 @@
 const express = require('express');
 const router = express.Router();
-const users = require('../util/user');
+const { todo, users ,Sequelize} = require('../models');
 /* GET home page. */
-router.get('/', (req, res, next) => {
-  console.log("INSIDE TODO");
-  let usr = users.filter(user => user._id === req.user._id);
-  //res.json(req.user);
-  res.render('todo', { usr: usr[0] });
-});
-router.post('/create/task',(req, res, next) => {
-  users.forEach(user => {
-    if(user._id === req.user._id){
-      user.todo.push(req.body.task);
-    }
+router.get('/', async (req, res, next) => {
+  console.log("User (inside TODO) : ",req.user);
+  let tasks = await todo.findAll({
+    where:{ userid: req.user.id },
+    attributes: ['id','name'],
+    required:false,
+    raw:true
   });
+  res.render('todo', { taskList: tasks });
+});
+
+router.post('/create/task', async (req, res, next) => {
+  console.log(req.body);
+  console.log(req.body.task);
+  try{
+    todo.create({
+      name: req.body.task,
+      userId: req.user.id
+    })
+  } catch (err){
+    console.log(err);
+    res.status(400).json(err);
+  }
   res.status(200).json(req.body);
 });
 
